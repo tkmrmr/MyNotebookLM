@@ -1,15 +1,18 @@
+from typing import Tuple
+
 import gradio as gr
 from langchain_community.document_loaders import PDFPlumberLoader
 from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_ollama import OllamaLLM
 from langchain.indexes import VectorstoreIndexCreator
+from langchain.indexes.vectorstore import VectorStoreIndexWrapper
 
 embeddings = HuggingFaceEmbeddings(model_name="pkshatech/GLuCoSE-base-ja")
 llm = OllamaLLM(model="gemma2:27b-instruct-q4_K_M")
 
 
-def process_pdf(file: gr.File) -> str:
+def process_pdf(file: str) -> Tuple[str, VectorStoreIndexWrapper | None]:
     try:
         loader = PDFPlumberLoader(file)
 
@@ -22,19 +25,20 @@ def process_pdf(file: gr.File) -> str:
         return f"PDFの処理中にエラーが発生しました：{e}", None
 
 
-def answer(message, history, index) -> str:
+def answer(message: str, history: list[str], index: VectorStoreIndexWrapper) -> str:
     if index is None:
         return "PDFがアップロードされていません"
-    res = index.query(message, llm=llm)
+    system_prompt = "回答はすべて日本語で行ってください。"
+    res = index.query(system_prompt + message, llm=llm)
     return res
 
 
 with gr.Blocks() as app:
-
     index = gr.State()
 
     gr.Markdown("# MyNotebookLM")
     gr.Markdown("アップロードしたPDFを参照してLLMが回答してくれるアプリ")
+    gr.Markdown("PDFの処理を行ってからチャットに移ってください．")
 
     with gr.Tab("PDF処理"):
         with gr.Row():
@@ -44,7 +48,12 @@ with gr.Blocks() as app:
             result = gr.Textbox(label="処理結果")
 
     with gr.Tab("チャット"):
-        gr.ChatInterface(fn=answer, type="messages", additional_inputs=[index])
+        gr.ChatInterface(
+            fn=answer,
+            type="messages",
+            additional_inputs=[index],
+            chatbot=gr.Chatbot(height=600, type="messages"),
+        )
 
     upload_button.click(fn=process_pdf, inputs=[file], outputs=[result, index])
 
