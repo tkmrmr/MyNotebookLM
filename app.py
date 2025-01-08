@@ -5,18 +5,16 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_ollama import OllamaLLM
 from langchain.indexes import VectorstoreIndexCreator
 
+embeddings = HuggingFaceEmbeddings(model_name="pkshatech/GLuCoSE-base-ja")
+llm = OllamaLLM(model="gemma2:27b-instruct-q4_K_M")
 
-def answer(file, query):
+
+def answer(file: gr.File, query: str) -> str:
     loader = PDFPlumberLoader(file)
-
-    embeddings = HuggingFaceEmbeddings(model_name="pkshatech/GLuCoSE-base-ja")
-    llm = OllamaLLM(model="gemma2:27b-instruct-q4_K_M")
 
     index = VectorstoreIndexCreator(
         vectorstore_cls=Chroma, embedding=embeddings
     ).from_loaders([loader])
-
-    query = query
 
     res = index.query(query, llm=llm)
     return res
