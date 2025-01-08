@@ -9,7 +9,7 @@ embeddings = HuggingFaceEmbeddings(model_name="pkshatech/GLuCoSE-base-ja")
 llm = OllamaLLM(model="gemma2:27b-instruct-q4_K_M")
 
 
-def answer(file: gr.File, query: str) -> str:
+def answer(file: str, query: str) -> str:
     loader = PDFPlumberLoader(file)
 
     index = VectorstoreIndexCreator(
