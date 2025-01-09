@@ -25,6 +25,14 @@ def process_pdf(file: str) -> Tuple[str, VectorStoreIndexWrapper | None]:
         return f"PDFの処理中にエラーが発生しました：{e}", None
 
 
+def generate_summary(index: VectorStoreIndexWrapper) -> str:
+    if index is None:
+        return "PDFがアップロードされていません"
+    query = "この文書の概要を日本語で答えてください。"
+    summary = index.query(query, llm=llm)
+    return summary
+
+
 def answer(message: str, history: list[str], index: VectorStoreIndexWrapper) -> str:
     if index is None:
         return "PDFがアップロードされていません"
@@ -45,7 +53,10 @@ with gr.Blocks() as app:
             with gr.Column():
                 file = gr.File(label="PDFをアップロード")
                 upload_button = gr.Button("PDFを処理")
-            result = gr.Textbox(label="処理結果")
+                generate_summary_button = gr.Button("概要を表示") 
+            with gr.Column():
+                result = gr.Textbox(label="処理結果")
+                summary = gr.Textbox(label="概要")
 
     with gr.Tab("チャット"):
         gr.ChatInterface(
@@ -56,6 +67,7 @@ with gr.Blocks() as app:
         )
 
     upload_button.click(fn=process_pdf, inputs=[file], outputs=[result, index])
+    generate_summary_button.click(fn=generate_summary, inputs=[index], outputs=[summary])
 
 if __name__ == "__main__":
     app.launch(share=True)
