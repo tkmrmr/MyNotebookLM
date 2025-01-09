@@ -64,7 +64,7 @@ with gr.Blocks() as app:
             with gr.Column():
                 file = gr.File(label="PDFをアップロード")
                 upload_button = gr.Button("PDFを処理")
-                generate_summary_button = gr.Button("概要を表示") 
+                generate_summary_button = gr.Button("概要を表示")
             with gr.Column():
                 result = gr.Textbox(label="処理結果")
                 summary = gr.Textbox(label="概要")
@@ -78,7 +78,9 @@ with gr.Blocks() as app:
         )
 
     upload_button.click(fn=process_pdf, inputs=[file], outputs=[result, index])
-    generate_summary_button.click(fn=generate_summary, inputs=[index], outputs=[summary])
+    generate_summary_button.click(
+        fn=generate_summary, inputs=[index], outputs=[summary]
+    )
 
 if __name__ == "__main__":
-    app.launch(share=True)
+    app.launch(share=True, server_name="0.0.0.0")
