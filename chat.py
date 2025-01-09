@@ -36,9 +36,20 @@ def generate_summary(index: VectorStoreIndexWrapper) -> str:
 def answer(message: str, history: list[str], index: VectorStoreIndexWrapper) -> str:
     if index is None:
         return "PDFがアップロードされていません"
-    system_prompt = "回答はすべて日本語で行ってください。"
-    res = index.query(system_prompt + message, llm=llm)
-    return res
+    query = f"""この文書の内容を基に、質問に対する回答を日本語で生成してください。回答は文書で明示されている情報のみに基づき、文書の範囲外の情報や推測を含めないでください。必要に応じて、文書内から具体的な引用を含めても構いません。
+
+    質問：
+    {message}
+
+    注意事項：
+    ・回答はすべて日本語で生成してください。
+    ・文書に記載されていない情報については、「文書内にその情報は記載されていません」と回答してください。
+    ・回答を生成する際は、文書内の情報に忠実であることを優先してください。
+
+    回答：
+    """
+    answer = index.query(query, llm=llm)
+    return answer
 
 
 with gr.Blocks() as app:
