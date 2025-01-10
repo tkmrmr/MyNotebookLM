@@ -9,7 +9,7 @@ from langchain.indexes import VectorstoreIndexCreator
 from langchain.indexes.vectorstore import VectorStoreIndexWrapper
 
 embeddings = HuggingFaceEmbeddings(model_name="pkshatech/GLuCoSE-base-ja")
-llm = OllamaLLM(model="gemma2:27b-instruct-q4_K_M")
+llm = OllamaLLM(base_url="http://ollama:11434", model="gemma2:27b-instruct-q4_K_M")
 
 
 def process_pdf(file: str) -> Tuple[str, VectorStoreIndexWrapper | None]:
